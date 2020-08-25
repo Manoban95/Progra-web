@@ -25,8 +25,10 @@
 	</div>
 	<script type="text/javascript">
 		var canvas = null, ctx = null, x = 0, y = 0;
-		var lastPress = 65, speed = 5, player = null, food =null;
+		var lastPress = 65, speed = 1, player = null, food =null;
 		var score = 0;
+		var pause=false;
+		var walls = new Array();
 
 		window.requestAnimationFrame = (function(){
 			return window.requestAnimationFrame || 
@@ -53,6 +55,23 @@
 			ctx.strokeStyle = "white";
 			ctx.fillText("Score: "+score,30,30);
 
+			ctx.fillStyle="grey";
+			for (var i = walls.length - 1; i >= 0 ; i--) {
+				walls[i].paint(ctx);
+			};
+
+			
+			if(pause){
+				ctx.fillStyle = "white";
+				ctx.font = "30px Arial";
+				ctx.strokeStyle = "white";
+				ctx.fillText("Pausado",190,120);
+				ctx.fillText("W / A / S / D",170,145);
+				ctx.fillText("Para continuar",150,170);
+			}
+			
+			
+
 			// ctx.fillStyle = "#0f0";
 			// ctx.fillRect(x,y,10,10);
 		}
@@ -64,6 +83,7 @@
 				player.x -= speed;
 				if (player.x < 0 ) {
 					player.x = canvas.width;
+					pause=false;
 				}
 			}
 
@@ -71,6 +91,7 @@
 				player.x += speed;
 				if(player.x > canvas.width){
 					player.x = -10;
+					pause=false;
 				}
 			}
 
@@ -78,6 +99,7 @@
 				player.y -= speed;
 				if (player.y < 0) {
 					player.y = canvas.height;
+					pause=false;
 				}
 			}
 
@@ -85,13 +107,27 @@
 				player.y += speed;
 				if (player.y > canvas.height) {
 					player.y = -10;
+					pause=false;
 				}
+			} 
+
+			if(lastPress==32){ //espacio
+				pause=true;
+				player.speed=0;
 			} 
 
 			if(player.intersects(food)){
 				food.x = random(canvas.width);
 				food.y = random(canvas.height);
 			}
+
+			/*
+			for (var i = walls.length - 1; i >= 0 ; i--) {
+				if(walls[i].intersects(player)){
+					pause=true;
+				}
+			};
+			*/
 		}
 
 		function run(){
@@ -106,6 +142,11 @@
 
 			player = new Rectangle(0,0,10,10);
 			food = new Rectangle(70,50,10,10);
+			walls.push(new Rectangle(100,50,10,10));
+			walls.push(new Rectangle(400,100,10,10));
+			walls.push(new Rectangle(40,200,10,10));
+			walls.push(new Rectangle(250,100,10,10));
+			walls.push(new Rectangle(150,200,10,10));
 
 			run();
 		} 
@@ -113,7 +154,7 @@
 		window.addEventListener('load',init,false);
 		
 		document.addEventListener('keydown',function(e){ 
-			if(e.keyCode==65 || e.keyCode ==  37 || e.keyCode ==  68 || e.keyCode ==  39 || e.keyCode ==  87 || e.keyCode ==  38 || e.keyCode ==  83 || e.keyCode ==  40 )
+			if(e.keyCode==65 || e.keyCode ==  37 || e.keyCode ==  68 || e.keyCode ==  39 || e.keyCode ==  87 || e.keyCode ==  38 || e.keyCode ==  83 || e.keyCode ==  40 || e.keyCode ==  32)
 				lastPress = e.keyCode; 
 		})
 
@@ -131,6 +172,7 @@
 				if (this.x < rect.x + rect.w && this.x + this.w > rect.x && 
 					this.y < rect.y + rect.h && this.y + this.h > rect.y){
 					score++;
+					speed++;
 					return true;
 				}
 			}
