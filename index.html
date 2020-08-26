@@ -28,6 +28,7 @@
 		var lastPress = 65, speed = 1, player = null, food =null;
 		var score = 0;
 		var pause=false;
+		var gameOver=false;
 		var walls = new Array();
 
 		window.requestAnimationFrame = (function(){
@@ -60,7 +61,15 @@
 				walls[i].paint(ctx);
 			};
 
-			
+			if(gameOver){
+				ctx.fillStyle = "white";
+				ctx.font = "30px Arial";
+				ctx.strokeStyle = "white";
+				ctx.fillText("Desinstala",150,80);
+				ctx.fillText("manco",160,105);
+			}
+
+			/*
 			if(pause){
 				ctx.fillStyle = "white";
 				ctx.font = "30px Arial";
@@ -69,7 +78,7 @@
 				ctx.fillText("W / A / S / D",170,145);
 				ctx.fillText("Para continuar",150,170);
 			}
-			
+			*/
 			
 
 			// ctx.fillStyle = "#0f0";
@@ -77,8 +86,9 @@
 		}
 
 		function act(){
- 
+ 	
 
+			if(!gameOver){
 			if(lastPress==65 || lastPress == 37){ //izquierda
 				player.x -= speed;
 				if (player.x < 0 ) {
@@ -116,18 +126,27 @@
 				player.speed=0;
 			} 
 
+			for (var i = walls.length - 1; i >= 0; i--) {
+				if (player.intersects(walls[i])) {
+					pause=true;
+					lastPress=false;
+				}
+			}
+
 			if(player.intersects(food)){
 				food.x = random(canvas.width);
 				food.y = random(canvas.height);
+				score++;
+				speed++;
 			}
 
-			/*
+			
 			for (var i = walls.length - 1; i >= 0 ; i--) {
 				if(walls[i].intersects(player)){
-					pause=true;
+					gameOver=true;
 				}
 			};
-			*/
+			}
 		}
 
 		function run(){
@@ -171,8 +190,6 @@
 			this.intersects = function(rect){
 				if (this.x < rect.x + rect.w && this.x + this.w > rect.x && 
 					this.y < rect.y + rect.h && this.y + this.h > rect.y){
-					score++;
-					speed++;
 					return true;
 				}
 			}
