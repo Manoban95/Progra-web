@@ -28,7 +28,10 @@
 		var lastPress = 65, speed = 1, player = null, food =null;
 		var score = 0;
 		var pause=false;
+		var gameOver=false;
 		var walls = new Array();
+		var manzana = new Image(), rana= new Image();
+		var eat = new Audio(), end = new Audio(), ps = new Audio(), musica = new Audio();
 
 		window.requestAnimationFrame = (function(){
 			return window.requestAnimationFrame || 
@@ -45,10 +48,12 @@
 			ctx.fillRect(0,0,canvas.width,canvas.height)
 
 			ctx.fillStyle = "#0f0";
-			player.paint(ctx);
+			//player.paint(ctx);
+			ctx.drawImage(rana,player.x,player.y);
 
 			ctx.fillStyle = "red";
-			food.paint(ctx);
+			//food.paint(ctx);
+			ctx.drawImage(manzana,food.x,food.y);
 
 			ctx.fillStyle = "white";
 			ctx.font = "30px Arial";
@@ -60,7 +65,15 @@
 				walls[i].paint(ctx);
 			};
 
-			
+			if(gameOver){
+				ctx.fillStyle = "white";
+				ctx.font = "30px Arial";
+				ctx.strokeStyle = "white";
+				ctx.fillText("Desinstala",150,80);
+				ctx.fillText("manco",160,105);
+			}
+
+			/*
 			if(pause){
 				ctx.fillStyle = "white";
 				ctx.font = "30px Arial";
@@ -69,7 +82,7 @@
 				ctx.fillText("W / A / S / D",170,145);
 				ctx.fillText("Para continuar",150,170);
 			}
-			
+			*/
 			
 
 			// ctx.fillStyle = "#0f0";
@@ -77,8 +90,9 @@
 		}
 
 		function act(){
- 
+ 	
 
+			if(!gameOver){
 			if(lastPress==65 || lastPress == 37){ //izquierda
 				player.x -= speed;
 				if (player.x < 0 ) {
@@ -113,32 +127,50 @@
 
 			if(lastPress==32){ //espacio
 				pause=true;
+				ps.play();
 				player.speed=0;
 			} 
+
+			for (var i = walls.length - 1; i >= 0; i--) {
+				if (player.intersects(walls[i])) {
+					pause=true;
+					lastPress=false;
+				}
+			}
 
 			if(player.intersects(food)){
 				food.x = random(canvas.width);
 				food.y = random(canvas.height);
+				score++;
+				speed++;
+				eat.play();
 			}
 
-			/*
+			
 			for (var i = walls.length - 1; i >= 0 ; i--) {
 				if(walls[i].intersects(player)){
-					pause=true;
+					gameOver=true;
+					end.play();
+
 				}
 			};
-			*/
+			}
+			//musica.play();
 		}
 
 		function run(){
 			window.requestAnimationFrame(run);
 			act();
 			paint(ctx);
+
 		}
 
 		function init(){
 			canvas = document.getElementById('canvas');
 			ctx = canvas.getContext('2d');
+
+			rana.src = "rana.png";
+			manzana.src = "manzana.png";
 
 			player = new Rectangle(0,0,10,10);
 			food = new Rectangle(70,50,10,10);
@@ -147,6 +179,12 @@
 			walls.push(new Rectangle(40,200,10,10));
 			walls.push(new Rectangle(250,100,10,10));
 			walls.push(new Rectangle(150,200,10,10));
+
+			eat.src = "food.mp3";
+			end.src = "loss.mp3";
+			ps.src = "ps.mp3";
+			musica.src = "musica.mp3";
+
 
 			run();
 		} 
@@ -171,8 +209,6 @@
 			this.intersects = function(rect){
 				if (this.x < rect.x + rect.w && this.x + this.w > rect.x && 
 					this.y < rect.y + rect.h && this.y + this.h > rect.y){
-					score++;
-					speed++;
 					return true;
 				}
 			}
